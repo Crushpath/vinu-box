@@ -14,7 +14,7 @@ enable :sessions
 # This is where we set the API key given by Box.
 # Get a key here: https://www.box.net/developers/services
 set :box_api_key, ENV['BOX_API_KEY']
-Box_API = "s98wvuem453uxv6g0so3gnyolhez09e0" #Temporary. Will be changed later
+Box_API = "z6uq0jbsoiz3qe3qhp4s5wrx08j05j7f" #Temporary. Will be changed later
 $folder; #Temporary
 
 # Helper methods are avaliable for access throughout the application.
