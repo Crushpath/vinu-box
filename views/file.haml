@@ -1,0 +1,19 @@
+-# Renders information about the given file
+.item-box.file
+  -# Print the name of the file and link to it if it is shared
+  %h1
+    - if file.shared_name
+      %a{:href => "http://www.box.net/shared/#{file.shared_name}"}= file.name
+    - else
+      = file.name
+  -# Print the file description if it has one    
+  - if file.description
+    %h5= file.description
+  -# Print time created and updated
+  %h5
+    Created at: #{Time.at(file.created.to_i).ctime}
+  %h5
+    Updated at: #{Time.at(file.updated.to_i).ctime}
+  %br/
+  -# Show a preview of the file using the embedded widget
+  = file.embed_code(:width => 640, :height => 480)

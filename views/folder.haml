@@ -1,0 +1,12 @@
+-#  Renders information about the given folder
+%ul.item-box{"data-id" => folder.id}
+  -# Show an add folder button
+  %li.item
+    .add_folder.button Add Folder
+  -# Show an add file button
+  %li.item
+    .add_file.button Add File
+  -# Loop over every folder and file (in that order)  
+  - (folder.folders + folder.files).each do |item|
+    -# Render a cell for each item
+    = partial(:item, :item => item)
