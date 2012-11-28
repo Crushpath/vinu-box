@@ -1,4 +1,4 @@
-#Box App udin Sinatra, Haml and Box-API
+#Box App using Sinatra, Haml and Box-API
 
 All the files have a pitch button against them so far.
 
