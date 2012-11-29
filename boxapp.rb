@@ -137,7 +137,7 @@ post "/file/pitch/:file_id" do |file_id|
   parent = account.root   # getting the root folder as parent
   
   name = params[:name]    # Get the Pitch folder name from post
-  if (!session[:folder]) 
+  if (session[:folder]==nil) 
   session[:folder] = parent.create(name)       # Create the pitch folder with the name
   end
 
