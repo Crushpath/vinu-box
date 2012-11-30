@@ -6,6 +6,7 @@ require 'box-api'
 require 'sinatra'
 require 'rack-flash'
 require 'haml'
+require 'pony'
 
 # Sessions are used to keep track of user logins.
 enable :sessions
@@ -32,7 +33,7 @@ helpers do
 	    # update the variables if passed parameters (such as during a redirect)
 	    session[:box_ticket] ||= params[:ticket]
 	    session[:box_token] ||= params[:auth_token]
-      session[:folder]=session[:folder] #Later folder id will be retreived from DB
+      session[:folder] ||= nil #Later folder id will be retreived from DB       
 
   	end
 
@@ -42,8 +43,8 @@ helpers do
     # The session information is used to keep the user logged in.
     def box_login(box_api_key, session)
       # make a new Account object using the API key
-      account = Box::Account.new(box_api_key)
-      session[:folder] #Session for pitch folder created with login
+      account = Box::Account.new(box_api_key)      
+      session[:folder] ||= nil #Session for pitch folder created with login
 
       # use a saved ticket or request a new one
       ticket = session[:box_ticket] || account.ticket
@@ -138,13 +139,32 @@ post "/file/pitch/:file_id" do |file_id|
   
   name = params[:name]    # Get the Pitch folder name from post
   if (session[:folder]==nil) 
-  session[:folder] = parent.create(name)       # Create the pitch folder with the name
+  session[:folder] = parent.create(name) # Create the pitch folder with the name
   end
 
   file = account.file(file_id) # get the file by id
   file_copy = file.copy(session[:folder])   #Copy the file to the Pitch folder
 
   #partial :item, :item => $folder # render the information about this folder
+end
+
+# Pony to send email. Currently sent with Gmail SMTP. 
+# Called when the file is copied to the pitch folder
+# ENV variables has to be set for email id and password
+
+get "/mail" do
+  Pony.mail :to => ENV['GMAIL_SMTP_USER'],
+            :from => ENV['GMAIL_SMTP_USER'],
+            :subject => 'Hola! New Pitch File Created',
+            :html_body => (haml :email, :layout => false, :format => :html5),
+            :via => :smtp,
+            :via_options => {
+              :address => 'smtp.gmail.com',
+              :user_name => ENV['GMAIL_SMTP_USER'],
+              :password => ENV['GMAIL_SMTP_PASSWORD']
+            }
+            
+  "Email sent to #{ENV['GMAIL_SMTP_USER']}"
 end
 
 # Gets a file by id and returns its details.
