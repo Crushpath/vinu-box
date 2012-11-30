@@ -35,7 +35,9 @@ $('.pitchbtn.clickable').live('click',function(){
 
       $.post("file/pitch/"+ id, { name: name }, function(data){
           //On success
-          $button.show('fast'); //Show the pitch btn      
+          $button.show('fast'); //Show the pitch btn  
+          $.get("/mail", function(data){
+          });    
           $spinner.remove(); 
        });
 
