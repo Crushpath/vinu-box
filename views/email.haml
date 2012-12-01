@@ -18,4 +18,7 @@
       #content
         -# The user name and File name and other relevant details can be added later
         %h3
-          We have a New Pitch File from User : 'xyz' and the file is 'abc.pdf'
+          We have a New Pitch File from User
+          =locals[:username]
+          and the file is 
+          =locals[:pitchfile]
