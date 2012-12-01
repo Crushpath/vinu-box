@@ -178,6 +178,7 @@ DEPENDENCIES
   forward
   haml
   hashie
+  json
   mongoid (~> 3.0.9)
   omniauth (~> 1.0.3)
   phone

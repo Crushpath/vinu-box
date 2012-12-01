@@ -25,6 +25,8 @@ $('.pitchbtn.clickable').live('click',function(){
      
       var id = $(this).data('id');
       var type = $(this).data('type');
+      var item_box = $(this).closest('.item-box');
+      var parent_id = item_box.data('id');
       var name = "crush_pitch"
 
       var $button = $(this);
@@ -35,8 +37,9 @@ $('.pitchbtn.clickable').live('click',function(){
 
       $.post("file/pitch/"+ id, { name: name }, function(data){
           //On success
-          $button.show('fast'); //Show the pitch btn      
-          $spinner.remove(); 
+          $button.show('fast'); //Show the pitch btn
+          $spinner.remove();
+          add_new_item(item_box, data)
        });
 
     // Prevent the default form behavoir.
@@ -115,6 +118,7 @@ $(document).ready(function() {
 
     // Add the new folder and the returned information about it.
     $.post("folder/add/" + parent_id, { name: name }, function(data) {
+      alert("FOlder : "+data);
       item.replaceWith(data).hide().show('fast');
     });
 
