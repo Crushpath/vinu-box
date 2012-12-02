@@ -18,32 +18,24 @@ enable :sessions
 # This is where we set the API key given by Box.
 # Get a key here: https://www.box.net/developers/services
 set :box_api_key, ENV['BOX_API_KEY']
-Box_API = "z6uq0jbsoiz3qe3qhp4s5wrx08j05j7f" #Temporary. Will be changed later
 
 configure do
-
-
 Mongoid.load!("config/mongoid.yml")
-
-   
 end
 
 # Helper methods are avaliable for access throughout the application.
 helpers do
 	
 	# Requires the user to be logged into Box, or redirect them to the login page.
- 	 def require_login
-      #box_login(settings.box_api_key, session) do |auth_url|
-      box_login(Box_API, session) do |auth_url|
-      redirect auth_url
-
+    def require_login
+      box_login(settings.box_api_key, session) do |auth_url|
+        redirect auth_url
+      end
     end
-  end
     def update_box_login
 	    # update the variables if passed parameters (such as during a redirect)
 	    session[:box_ticket] ||= params[:ticket]
 	    session[:box_token] ||= params[:auth_token]
-      #session[:folder] ||= nil #Later folder id will be retreived from DB       
 
   	end
 
@@ -71,7 +63,6 @@ helpers do
     def box_login(box_api_key, session)
       # make a new Account object using the API key
       account = Box::Account.new(box_api_key)      
-      #session[:folder] ||= nil #Session for pitch folder created with login
 
       # use a saved ticket or request a new one
       ticket = session[:box_ticket] || account.ticket
@@ -171,7 +162,7 @@ post "/file/pitch/:file_id" do |file_id|
 
   db_user = User.find_by(user_id: user_id) #Raise error exception set to false
 
-  if db_user==nil
+  if db_user.nil?
     parent = account.root   # getting the root folder as parent
     folder = parent.create(name) # Create the pitch folder with the name
     folder_id = folder.id
@@ -231,6 +222,5 @@ end
 # Handles logout requests.
 get "/logout" do
   box_logout(session)
-
   redirect "/" # redirect to the home page
 end
