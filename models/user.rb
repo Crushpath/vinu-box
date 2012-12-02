@@ -1,5 +1,10 @@
 class User
-	include Mongoid::Document
-	field :user_id, type: Integer
-	field :folder_id, type: Integer
+	
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  has_many :pitchfiles
+
+	field :box_user_id, type: Integer
+
 end
