@@ -13,6 +13,7 @@ gem "hashie"
 gem "omniauth", "~> 1.0.3"
 gem "rest-client"
 gem 'phone'
+gem 'json'
 
 gem "sinatra-bundles"
 gem "sinatra-partial"
