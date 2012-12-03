@@ -7,4 +7,6 @@ class User
 
 	field :box_user_id, type: Integer
 
+  validates_presence_of :box_user_id
+
 end
