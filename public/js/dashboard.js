@@ -39,7 +39,6 @@ $('.pitchbtn.clickable').live('click',function(){
           //On success
           $button.show('fast'); //Show the pitch btn
           $spinner.remove();
-          add_new_item(item_box, data)
        });
 
     // Prevent the default form behavoir.

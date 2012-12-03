@@ -11,5 +11,5 @@ class Pitchfile
   field :parent_id, type: Integer
   field :is_Folder, type: Boolean
 
-  validates_presence_of :file_is, :parent_id
+  validates_presence_of :file_id, :parent_id
 end
