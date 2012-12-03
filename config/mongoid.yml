@@ -1,9 +1,26 @@
 development:
   sessions:
     default:
-      database: mongoid
+      database: boxapp
       hosts:
         - localhost:27017
   options:
     allow_dynamic_fields: false
     raise_not_found_error: false
+test:
+  sessions:
+    default:
+      database: test
+      hosts:
+        - localhost:27017
+
+production:
+  sessions:
+    default:
+      uri: <%= ENV['MONGOHQ_URL'] %>
+      options:
+        skip_version_check: true
+        safe: true
+  options:
+    raise_not_found_error: false
+

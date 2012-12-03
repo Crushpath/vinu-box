@@ -10,6 +10,7 @@ require 'pony'
 require 'mongoid'
 require 'json'
 require "./models/user"
+require "./models/pitchfile"
 
 # Sessions are used to keep track of user logins.
 enable :sessions
@@ -18,32 +19,24 @@ enable :sessions
 # This is where we set the API key given by Box.
 # Get a key here: https://www.box.net/developers/services
 set :box_api_key, ENV['BOX_API_KEY']
-Box_API = "z6uq0jbsoiz3qe3qhp4s5wrx08j05j7f" #Temporary. Will be changed later
 
 configure do
-
-
 Mongoid.load!("config/mongoid.yml")
-
-   
 end
 
 # Helper methods are avaliable for access throughout the application.
 helpers do
 	
 	# Requires the user to be logged into Box, or redirect them to the login page.
- 	 def require_login
-      #box_login(settings.box_api_key, session) do |auth_url|
-      box_login(Box_API, session) do |auth_url|
-      redirect auth_url
-
+    def require_login
+      box_login(settings.box_api_key, session) do |auth_url|
+        redirect auth_url
+      end
     end
-  end
     def update_box_login
 	    # update the variables if passed parameters (such as during a redirect)
 	    session[:box_ticket] ||= params[:ticket]
 	    session[:box_token] ||= params[:auth_token]
-      #session[:folder] ||= nil #Later folder id will be retreived from DB       
 
   	end
 
@@ -52,7 +45,7 @@ helpers do
       # Pony to send email. Currently sent with Gmail SMTP. 
       # Called when the file is copied to the pitch folder
       # ENV variables has to be set for email id and password
-      Pony.mail :to => ENV['GMAIL_SMTP_USER'],
+      Pony.mail :to => 'ciberch@crushpath.com',
                 :from => ENV['GMAIL_SMTP_USER'],
                 :subject => 'Hola! New Pitch File Created',
                 :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
@@ -71,7 +64,6 @@ helpers do
     def box_login(box_api_key, session)
       # make a new Account object using the API key
       account = Box::Account.new(box_api_key)      
-      #session[:folder] ||= nil #Session for pitch folder created with login
 
       # use a saved ticket or request a new one
       ticket = session[:box_ticket] || account.ticket
@@ -165,30 +157,42 @@ end
 post "/file/pitch/:file_id" do |file_id|
   account = require_login # make sure the user is authorized
   user = account.info #Retrieve account information
-  user_id = user["user_id"] 
-
+  user_id = user["user_id"] #Retrieve the box user id
+  
   name = params[:name]    # Get the Pitch folder name from post
 
-  db_user = User.find_by(user_id: user_id) #Raise error exception set to false
+  db_user = User.find_or_create_by(box_user_id: user_id) #Raise error exception set to false
 
-  if db_user==nil
-    parent = account.root   # getting the root folder as parent
-    folder = parent.create(name) # Create the pitch folder with the name
-    folder_id = folder.id
-    db_user = User.create(user_id: user_id, folder_id: folder_id)
+  #Check for existence of pitch folde by name, parent :0  and is_Folder condition
+  db_folder = Pitchfile.find_by(name: name, parent_id: 0, is_Folder: true)
+
+
+  if db_folder.nil?
+    begin
+      parent = account.root   # getting the root folder as parent
+      folder = parent.create(name) # Create the pitch folder with the name
+      folder_id = folder.id
+      db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true )
+      rescue Box::Api::NameTaken
+        puts $!.inspect
+      rescue Box::Api::NoAccess 
+        puts $!    
+      end
   end
 
-    folder_id = db_user.folder_id
-    folder = account.folder(folder_id)
+  begin
+    #Check for the Folder match with Box.
+    folder = account.folder(db_folder.file_id)
     file = account.file(file_id) # get the file by id
     file_copy = file.copy(folder)   #Copy the file to the Pitch folder
     pitchfile = file_copy.name #Stores the copied file name
     username = user["login"] #Gets the user login. 
-
-
+    Pitchfile.create(file_id: file_copy.id, name: pitchfile, parent_id: folder.id, is_Folder: false )
     #Function to send pitch mail after the file is copied.
     send_pitch_email(pitchfile: pitchfile, username: username)
-
+  rescue Box::Api::NameTaken
+    puts $!
+  end
    partial :item, :item => folder # render the information about this folder
 
 end
@@ -198,8 +202,6 @@ get "/file/:file_id" do |file_id|
   account = require_login  # make sure the user is authorized
   file = account.file(file_id) # get the file by id
   user = account.info
-  puts ("FIle_id" + file.id)
-  puts ("Account "+user["user_id"])
 
   # Note: Getting a file by ID is fastest, but it won't know about its parents.
   # If you need this information, use 'account.root.find(:id => file_id)' instead.
@@ -231,6 +233,5 @@ end
 # Handles logout requests.
 get "/logout" do
   box_logout(session)
-
   redirect "/" # redirect to the home page
 end
