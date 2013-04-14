@@ -9,4 +9,8 @@ class User
 
   validates_presence_of :box_user_id
 
+  def num_pitches
+    pitchfiles.count
+  end
+
 end
