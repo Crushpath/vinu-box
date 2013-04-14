@@ -25,7 +25,6 @@ configure do
   Mongoid.load!("config/mongoid.yml")
   set :environment, 'development'
   log = Logger.new("logs/#{ENV['RACK_ENV']}.txt")
-  Box_API = "21yf6qw0oasxfbmsaanlqlastppwye72" #Temporary. Will be changed later
   #FIXME: Change later when the app is more stable
   log.level = Logger::DEBUG
 
