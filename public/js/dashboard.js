@@ -118,7 +118,7 @@ $(document).ready(function() {
 
     // Add the new folder and the returned information about it.
     $.post("folder/add/" + parent_id, { name: name }, function(data) {
-      alert("FOlder : "+data);
+      //alert("Folder : "+data);
       item.replaceWith(data).hide().show('fast');
     });
 
