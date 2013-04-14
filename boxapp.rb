@@ -54,7 +54,7 @@ helpers do
     # Pony to send email. Currently sent with Gmail SMTP. 
     # Called when the file is copied to the pitch folder
     # ENV variables has to be set for email id and password
-    Pony.mail :to => 'ciberch@crushpath.com',
+    Pony.mail :to => 'pitch@crushpath.com',
       :from => ENV['GMAIL_SMTP_USER'],
       :subject => 'Hola! New Pitch File Created',
       :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
