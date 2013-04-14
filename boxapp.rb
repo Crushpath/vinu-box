@@ -183,7 +183,7 @@ post "/file/pitch/:file_id" do |file_id|
       folder = parent.create(name) # Create the pitch folder with the name
       folder = parent.at(name) if folder.nil? # If the folder exists you cannot create it
       folder_id = folder.id
-      db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true, user_id: user_id)
+      db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true, user_id: db_user.id)
     rescue Box::Api::NameTaken
       puts $!.inspect
     rescue Box::Api::NoAccess 
@@ -198,7 +198,7 @@ post "/file/pitch/:file_id" do |file_id|
     file_copy = file.copy(folder)   #Copy the file to the Pitch folder
     pitchfile = file_copy.name #Stores the copied file name
     username = user["login"] #Gets the user login. 
-    Pitchfile.create(file_id: file_copy.id, name: pitchfile, parent_id: folder.id, is_Folder: false, user_id: user_id )
+    Pitchfile.create(file_id: file_copy.id, name: pitchfile, parent_id: folder.id, is_Folder: false, user_id: db_user.id )
     #Function to send pitch mail after the file is copied.
     send_pitch_email(pitchfile: pitchfile, username: username)
   rescue Box::Api::NameTaken

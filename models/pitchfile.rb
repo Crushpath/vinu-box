@@ -4,6 +4,7 @@ class Pitchfile
   include Mongoid::Timestamps
 
   belongs_to :user
+  has_many :pitchfiles
 
   field :file_id, type: Integer
   field :name, type: String
