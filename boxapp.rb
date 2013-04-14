@@ -9,9 +9,10 @@ require 'haml'
 require 'pony'
 require 'mongoid'
 require 'json'
+<<<<<<< HEAD
 require "./models/user"
 require "./models/pitchfile"
-
+require 'logger'
 # Sessions are used to keep track of user logins.
 enable :sessions
 
@@ -21,7 +22,14 @@ enable :sessions
 set :box_api_key, ENV['BOX_API_KEY']
 
 configure do
-Mongoid.load!("config/mongoid.yml")
+
+  Mongoid.load!("config/mongoid.yml")
+  set :environment, 'development'
+  log = Logger.new("logs/#{ENV['RACK_ENV']}.txt")
+  Box_API = "21yf6qw0oasxfbmsaanlqlastppwye72" #Temporary. Will be changed later
+  #FIXME: Change later when the app is more stable
+  log.level = Logger::DEBUG
+
 end
 
 # Helper methods are avaliable for access throughout the application.
@@ -57,55 +65,54 @@ helpers do
                 }
     end
 
+  # Authenticates the user using the given API key and session information.
+  # The session information is used to keep the user logged in.
+  def box_login(box_api_key, session)
+    # make a new Account object using the API key
+    account = Box::Account.new(box_api_key)      
+    #session[:folder] ||= nil #Session for pitch folder created with login
 
+    # use a saved ticket or request a new one
+    ticket = session[:box_ticket] || account.ticket
+    token = session[:box_token]
 
-	# Authenticates the user using the given API key and session information.
-    # The session information is used to keep the user logged in.
-    def box_login(box_api_key, session)
-      # make a new Account object using the API key
-      account = Box::Account.new(box_api_key)      
+    # try to authorize the account using the ticket and/or token
+    authed = account.authorize(:ticket => ticket, :auth_token => token) do |auth_url|
+      # this block is called if the authorization failed
 
-      # use a saved ticket or request a new one
-      ticket = session[:box_ticket] || account.ticket
-      token = session[:box_token]
+      # save the ticket we used for later
+      session[:box_ticket] = ticket
 
-      # try to authorize the account using the ticket and/or token
-      authed = account.authorize(:ticket => ticket, :auth_token => token) do |auth_url|
-        # this block is called if the authorization failed
-
-        # save the ticket we used for later
-        session[:box_ticket] = ticket
-
-        # yield with the url the user must visit to authenticate
-        yield auth_url if block_given?
-      end
-
-      if authed
-        # authentication was successful, save the token for later
-        session[:box_token] = account.auth_token
-
-        # return the account
-        return account
-      end
+      # yield with the url the user must visit to authenticate
+      yield auth_url if block_given?
     end
 
-    # Removes session information so the account is forgotten.
+    if authed
+      # authentication was successful, save the token for later
+      session[:box_token] = account.auth_token
 
-    # Note: This doesn't actually log the user out, it just clears the session data.
-    def box_logout(session)
-      session.delete(:box_token)
-      session.delete(:box_ticket)
+      # return the account
+      return account
     end
+  end
 
-    # Just renders a template with no special options
-    def full(template, locals = {})
+  # Removes session information so the account is forgotten.
+
+  # Note: This doesn't actually log the user out, it just clears the session data.
+  def box_logout(session)
+    session.delete(:box_token)
+    session.delete(:box_ticket)
+  end
+
+  # Just renders a template with no special options
+  def full(template, locals = {})
     haml(template, :locals => locals)
-    end
+  end
 
-    # Renders a template, but without the entire layout (good for AJAX calls).
-    def partial(template, locals = {})
-      haml(template, :layout => false, :locals => locals)
-    end
+  # Renders a template, but without the entire layout (good for AJAX calls).
+  def partial(template, locals = {})
+    haml(template, :layout => false, :locals => locals)
+  end
 end
 
 
@@ -202,6 +209,10 @@ get "/file/:file_id" do |file_id|
   account = require_login  # make sure the user is authorized
   file = account.file(file_id) # get the file by id
   user = account.info
+  #FIXME: puts to logger
+
+  logger.debug "FIle_id" + file.id
+  logger.debug "Account "+user["user_id"]
 
   # Note: Getting a file by ID is fastest, but it won't know about its parents.
   # If you need this information, use 'account.root.find(:id => file_id)' instead.
