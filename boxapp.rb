@@ -9,7 +9,6 @@ require 'haml'
 require 'pony'
 require 'mongoid'
 require 'json'
-<<<<<<< HEAD
 require "./models/user"
 require "./models/pitchfile"
 require 'logger'
@@ -34,36 +33,36 @@ end
 
 # Helper methods are avaliable for access throughout the application.
 helpers do
-	
-	# Requires the user to be logged into Box, or redirect them to the login page.
-    def require_login
-      box_login(settings.box_api_key, session) do |auth_url|
-        redirect auth_url
-      end
+
+  # Requires the user to be logged into Box, or redirect them to the login page.
+  def require_login
+    box_login(settings.box_api_key, session) do |auth_url|
+      redirect auth_url
     end
-    def update_box_login
-	    # update the variables if passed parameters (such as during a redirect)
-	    session[:box_ticket] ||= params[:ticket]
-	    session[:box_token] ||= params[:auth_token]
+  end
+  def update_box_login
+    # update the variables if passed parameters (such as during a redirect)
+    session[:box_ticket] ||= params[:ticket]
+    session[:box_token] ||= params[:auth_token]
 
-  	end
+  end
 
-    def send_pitch_email(locals = {})
+  def send_pitch_email(locals = {})
 
-      # Pony to send email. Currently sent with Gmail SMTP. 
-      # Called when the file is copied to the pitch folder
-      # ENV variables has to be set for email id and password
-      Pony.mail :to => 'ciberch@crushpath.com',
-                :from => ENV['GMAIL_SMTP_USER'],
-                :subject => 'Hola! New Pitch File Created',
-                :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
-                :via => :smtp,
-                :via_options => {
-                  :address => 'smtp.gmail.com',
-                  :user_name => ENV['GMAIL_SMTP_USER'],
-                  :password => ENV['GMAIL_SMTP_PASSWORD']
-                }
-    end
+    # Pony to send email. Currently sent with Gmail SMTP. 
+    # Called when the file is copied to the pitch folder
+    # ENV variables has to be set for email id and password
+    Pony.mail :to => 'ciberch@crushpath.com',
+      :from => ENV['GMAIL_SMTP_USER'],
+      :subject => 'Hola! New Pitch File Created',
+      :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
+      :via => :smtp,
+      :via_options => {
+      :address => 'smtp.gmail.com',
+      :user_name => ENV['GMAIL_SMTP_USER'],
+      :password => ENV['GMAIL_SMTP_PASSWORD']
+    }
+  end
 
   # Authenticates the user using the given API key and session information.
   # The session information is used to keep the user logged in.
@@ -165,7 +164,7 @@ post "/file/pitch/:file_id" do |file_id|
   account = require_login # make sure the user is authorized
   user = account.info #Retrieve account information
   user_id = user["user_id"] #Retrieve the box user id
-  
+
   name = params[:name]    # Get the Pitch folder name from post
 
   db_user = User.find_or_create_by(box_user_id: user_id) #Raise error exception set to false
@@ -180,11 +179,11 @@ post "/file/pitch/:file_id" do |file_id|
       folder = parent.create(name) # Create the pitch folder with the name
       folder_id = folder.id
       db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true )
-      rescue Box::Api::NameTaken
-        puts $!.inspect
-      rescue Box::Api::NoAccess 
-        puts $!    
-      end
+    rescue Box::Api::NameTaken
+      puts $!.inspect
+    rescue Box::Api::NoAccess 
+      puts $!    
+    end
   end
 
   begin
@@ -200,7 +199,7 @@ post "/file/pitch/:file_id" do |file_id|
   rescue Box::Api::NameTaken
     puts $!
   end
-   partial :item, :item => folder # render the information about this folder
+  partial :item, :item => folder # render the information about this folder
 
 end
 
