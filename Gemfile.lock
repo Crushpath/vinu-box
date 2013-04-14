@@ -70,6 +70,7 @@ GEM
     i18n (0.6.1)
     jruby-pageant (1.1.1)
     json (1.7.5)
+    logger (1.2.8)
     mail (2.5.2)
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
@@ -190,6 +191,7 @@ DEPENDENCIES
   haml
   hashie
   json
+  logger
   mongoid (~> 3.0.9)
   omniauth (~> 1.0.3)
   phone
