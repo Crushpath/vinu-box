@@ -1,0 +1,23 @@
+-# Based on HTML5 BoilerPlate project http://html5boilerplate.com/
+-# This file has the html format for the email sent later
+
+!!!
+%html.no-js{:lang => "en"}
+  %head
+    %meta{:charset => "utf-8"}
+      %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}
+        %title Daily Summary
+        %meta{:content => "Email for Box-App", :name => "description"}
+          %meta{:content => "you", :name => "author"}
+            %meta{:content => "width=device-width,initial-scale=1", :name => "viewport"}
+  %body
+    #container
+      %header
+        %h2
+          These are the daily Stats
+      #content
+        -# The user name and File name and other relevant details can be added later
+        -users.each do |user|
+          %h3= user.name
+          -user.pitchfiles.to_a.sort_by(&:count).each do |file|
+            = "#{file.name} - #{file.count}"
