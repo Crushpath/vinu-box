@@ -33,6 +33,8 @@ gem "pony"
 gem "box-api", "~> 0.2.2"
 gem 'rack-flash3'
 
+gem "logger"
+
 group :development, :test do
   gem "pry"
   gem "debugger-pry"
