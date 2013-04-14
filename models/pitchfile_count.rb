@@ -6,4 +6,11 @@ class PitchfileCount
 
   field :count, type: Integer
 
+  class << self
+    def sorted
+      order_by([[:count,:desc]]).where(:count.gt => 0).entries 
+    end
+
+  end
+
 end

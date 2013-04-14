@@ -34,6 +34,7 @@ gem "box-api", "~> 0.2.2"
 gem 'rack-flash3'
 
 gem "logger"
+gem "em-http-stream", :git => "git://github.com/kmamykin/em-http-stream.git" 
 
 group :development, :test do
   gem "pry"

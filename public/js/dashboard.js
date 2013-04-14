@@ -27,7 +27,7 @@ $('.pitchbtn.clickable').live('click',function(){
       var type = $(this).data('type');
       var item_box = $(this).closest('.item-box');
       var parent_id = item_box.data('id');
-      var name = "crush_pitch"
+      var name = "Pitch"
 
       var $button = $(this);
       var $spinner = $("<div class=\"spinny\"></div>");

@@ -8,6 +8,15 @@ GIT
       mongoid (~> 3.0.0)
       mongoid-grid_fs (~> 1.3.1)
 
+GIT
+  remote: git://github.com/kmamykin/em-http-stream.git
+  revision: 68d8a1a00f6244489449bb6da3db315cbeb3ad7f
+  specs:
+    em-http-stream (0.1.0)
+      eventmachine (>= 0.12.8)
+      http_parser.rb (~> 0.5.1)
+      simple_oauth (~> 0.1.4)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -64,6 +73,7 @@ GEM
     httmultiparty (0.3.8)
       httparty (>= 0.7.3)
       multipart-post
+    http_parser.rb (0.5.3)
     httparty (0.9.0)
       multi_json (~> 1.0)
       multi_xml
@@ -147,6 +157,7 @@ GEM
     ruby-hmac (0.4.0)
     shotgun (0.9)
       rack (>= 1.0)
+    simple_oauth (0.1.9)
     sinatra (1.3.3)
       rack (~> 1.3, >= 1.3.6)
       rack-protection (~> 1.2)
@@ -186,6 +197,7 @@ DEPENDENCIES
   carrierwave-mongoid!
   debugger
   debugger-pry
+  em-http-stream!
   fog
   forward
   haml

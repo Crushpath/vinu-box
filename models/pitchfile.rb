@@ -4,6 +4,7 @@ class Pitchfile
   include Mongoid::Timestamps
 
   belongs_to :user
+  has_one :pitchfile_count
 
   field :file_id, type: Integer
   field :name, type: String
@@ -12,4 +13,8 @@ class Pitchfile
   field :is_Folder, type: Boolean
 
   validates_presence_of :file_id, :parent_id
+
+  def count
+    pitchfile_count.count
+  end
 end
