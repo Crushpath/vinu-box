@@ -12,6 +12,7 @@ require 'mongoid'
 require 'json'
 require "./models/user"
 require "./models/pitchfile"
+require "./models/pitchfile_count"
 require 'logger'
 require 'pry'
 # Sessions are used to keep track of user logins.
@@ -182,7 +183,7 @@ post "/file/pitch/:file_id" do |file_id|
       folder = parent.create(name) # Create the pitch folder with the name
       folder = parent.at(name) if folder.nil? # If the folder exists you cannot create it
       folder_id = folder.id
-      db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true )
+      db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true, user_id: user_id)
     rescue Box::Api::NameTaken
       puts $!.inspect
     rescue Box::Api::NoAccess 
@@ -197,7 +198,7 @@ post "/file/pitch/:file_id" do |file_id|
     file_copy = file.copy(folder)   #Copy the file to the Pitch folder
     pitchfile = file_copy.name #Stores the copied file name
     username = user["login"] #Gets the user login. 
-    Pitchfile.create(file_id: file_copy.id, name: pitchfile, parent_id: folder.id, is_Folder: false )
+    Pitchfile.create(file_id: file_copy.id, name: pitchfile, parent_id: folder.id, is_Folder: false, user_id: user_id )
     #Function to send pitch mail after the file is copied.
     send_pitch_email(pitchfile: pitchfile, username: username)
   rescue Box::Api::NameTaken
@@ -250,6 +251,25 @@ get "/logout" do
   redirect "/" # redirect to the home page
 end
 
-EventMachine::run {
-  puts "Hi"
-}
+#EventMachine::run {
+  ## Access box.com event stream
+  #stream = EventMachine::JSONStream.connect(
+    #:path    => '/1/statuses/filter.json?track=football',
+    #:auth    => 'LOGIN:PASSWORD'
+  #)
+
+  #stream.each_item do |item|
+    ## item is unparsed JSON string.
+    ## if it's a file event on a file inside pitch folder
+    ## increment count
+  #end
+
+  #stream.on_error do |message|
+    ## No need to worry here. It might be an issue with Twitter. 
+    ## Log message for future reference. JSONStream will try to reconnect after a timeout.
+  #end
+
+  #stream.on_max_reconnects do |timeout, retries|
+    ## Something is wrong on your side. Send yourself an email.
+  #end
+#}
