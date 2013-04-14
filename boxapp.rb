@@ -1,4 +1,5 @@
 require 'rubygems' if RUBY_VERSION < '1.9'
+require 'em-http-stream/json_stream'
 
 #BoxApp using Sinatra , Box-API and Haml
 
@@ -248,3 +249,7 @@ get "/logout" do
   box_logout(session)
   redirect "/" # redirect to the home page
 end
+
+EventMachine::run {
+  puts "Hi"
+}
