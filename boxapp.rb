@@ -12,6 +12,7 @@ require 'json'
 require "./models/user"
 require "./models/pitchfile"
 require 'logger'
+require 'pry'
 # Sessions are used to keep track of user logins.
 enable :sessions
 
@@ -25,9 +26,10 @@ configure do
   Mongoid.load!("config/mongoid.yml")
   set :environment, 'development'
   log = Logger.new("logs/#{ENV['RACK_ENV']}.txt")
-  Box_API = "21yf6qw0oasxfbmsaanlqlastppwye72" #Temporary. Will be changed later
+  Box_API = "w9ipbwehe4spgdp49o4rlqulhaz69p4l" #Temporary. Will be changed later
   #FIXME: Change later when the app is more stable
   log.level = Logger::DEBUG
+  settings.box_api_key ||= Box_API
 
 end
 
@@ -52,7 +54,7 @@ helpers do
     # Pony to send email. Currently sent with Gmail SMTP. 
     # Called when the file is copied to the pitch folder
     # ENV variables has to be set for email id and password
-    Pony.mail :to => 'ciberch@crushpath.com',
+    Pony.mail :to => 'pitch@crushpath.com',
       :from => ENV['GMAIL_SMTP_USER'],
       :subject => 'Hola! New Pitch File Created',
       :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
@@ -177,6 +179,7 @@ post "/file/pitch/:file_id" do |file_id|
     begin
       parent = account.root   # getting the root folder as parent
       folder = parent.create(name) # Create the pitch folder with the name
+      folder = parent.at(name) if folder.nil? # If the folder exists you cannot create it
       folder_id = folder.id
       db_folder = Pitchfile.create(file_id: folder_id, name: name, parent_id: 0, is_Folder: true )
     rescue Box::Api::NameTaken
