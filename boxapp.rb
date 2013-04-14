@@ -18,102 +18,100 @@ enable :sessions
 # This is where we set the API key given by Box.
 # Get a key here: https://www.box.net/developers/services
 set :box_api_key, ENV['BOX_API_KEY']
-Box_API = "z6uq0jbsoiz3qe3qhp4s5wrx08j05j7f" #Temporary. Will be changed later
+Box_API = "21yf6qw0oasxfbmsaanlqlastppwye72" #Temporary. Will be changed later
 
 configure do
 
 
-Mongoid.load!("config/mongoid.yml")
+  Mongoid.load!("config/mongoid.yml")
 
-   
+
 end
 
 # Helper methods are avaliable for access throughout the application.
 helpers do
-	
-	# Requires the user to be logged into Box, or redirect them to the login page.
- 	 def require_login
-      #box_login(settings.box_api_key, session) do |auth_url|
-      box_login(Box_API, session) do |auth_url|
-      redirect auth_url
 
+  # Requires the user to be logged into Box, or redirect them to the login page.
+  def require_login
+    #box_login(settings.box_api_key, session) do |auth_url|
+    box_login(Box_API, session) do |auth_url|
+      redirect auth_url
     end
   end
-    def update_box_login
-	    # update the variables if passed parameters (such as during a redirect)
-	    session[:box_ticket] ||= params[:ticket]
-	    session[:box_token] ||= params[:auth_token]
-      #session[:folder] ||= nil #Later folder id will be retreived from DB       
+  def update_box_login
+    # update the variables if passed parameters (such as during a redirect)
+    session[:box_ticket] ||= params[:ticket]
+    session[:box_token] ||= params[:auth_token]
+    #session[:folder] ||= nil #Later folder id will be retreived from DB       
+  end
 
-  	end
+  def send_pitch_email(locals = {})
 
-    def send_pitch_email(locals = {})
+    # Pony to send email. Currently sent with Gmail SMTP. 
+    # Called when the file is copied to the pitch folder
+    # ENV variables has to be set for email id and password
+    Pony.mail :to => ENV['GMAIL_SMTP_USER'],
+      :from => ENV['GMAIL_SMTP_USER'],
+      :subject => 'Hola! New Pitch File Created',
+      :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
+      :via => :smtp,
+      :via_options => {
+      :address => 'smtp.gmail.com',
+      :user_name => ENV['GMAIL_SMTP_USER'],
+      :password => ENV['GMAIL_SMTP_PASSWORD']
+    }
+  end
 
-      # Pony to send email. Currently sent with Gmail SMTP. 
-      # Called when the file is copied to the pitch folder
-      # ENV variables has to be set for email id and password
-      Pony.mail :to => ENV['GMAIL_SMTP_USER'],
-                :from => ENV['GMAIL_SMTP_USER'],
-                :subject => 'Hola! New Pitch File Created',
-                :html_body => (haml :email, :layout => false, :format => :html5, :locals => locals),
-                :via => :smtp,
-                :via_options => {
-                  :address => 'smtp.gmail.com',
-                  :user_name => ENV['GMAIL_SMTP_USER'],
-                  :password => ENV['GMAIL_SMTP_PASSWORD']
-                }
+
+
+  # Authenticates the user using the given API key and session information.
+  # The session information is used to keep the user logged in.
+  def box_login(box_api_key, session)
+    # make a new Account object using the API key
+    account = Box::Account.new(box_api_key)      
+    #session[:folder] ||= nil #Session for pitch folder created with login
+
+    # use a saved ticket or request a new one
+    ticket = session[:box_ticket] || account.ticket
+    token = session[:box_token]
+
+    # try to authorize the account using the ticket and/or token
+    authed = account.authorize(:ticket => ticket, :auth_token => token) do |auth_url|
+      # this block is called if the authorization failed
+
+      # save the ticket we used for later
+      session[:box_ticket] = ticket
+
+      # yield with the url the user must visit to authenticate
+      yield auth_url if block_given?
     end
 
+    if authed
+      # authentication was successful, save the token for later
+      session[:box_token] = account.auth_token
 
-
-	# Authenticates the user using the given API key and session information.
-    # The session information is used to keep the user logged in.
-    def box_login(box_api_key, session)
-      # make a new Account object using the API key
-      account = Box::Account.new(box_api_key)      
-      #session[:folder] ||= nil #Session for pitch folder created with login
-
-      # use a saved ticket or request a new one
-      ticket = session[:box_ticket] || account.ticket
-      token = session[:box_token]
-
-      # try to authorize the account using the ticket and/or token
-      authed = account.authorize(:ticket => ticket, :auth_token => token) do |auth_url|
-        # this block is called if the authorization failed
-
-        # save the ticket we used for later
-        session[:box_ticket] = ticket
-
-        # yield with the url the user must visit to authenticate
-        yield auth_url if block_given?
-      end
-
-      if authed
-        # authentication was successful, save the token for later
-        session[:box_token] = account.auth_token
-
-        # return the account
-        return account
-      end
+      # return the account
+      return account
     end
+  end
 
-    # Removes session information so the account is forgotten.
+  # Removes session information so the account is forgotten.
 
-    # Note: This doesn't actually log the user out, it just clears the session data.
-    def box_logout(session)
-      session.delete(:box_token)
-      session.delete(:box_ticket)
-    end
+  # Note: This doesn't actually log the user out, it just clears the session data.
+  def box_logout(session)
+    session.delete(:box_token)
+    session.delete(:box_ticket)
+  end
 
-    # Just renders a template with no special options
-    def full(template, locals = {})
+  # Just renders a template with no special options
+  def full(template, locals = {})
     haml(template, :locals => locals)
-    end
+  end
 
-    # Renders a template, but without the entire layout (good for AJAX calls).
-    def partial(template, locals = {})
-      haml(template, :layout => false, :locals => locals)
-    end
+  # Renders a template, but without the entire layout (good for AJAX calls).
+  def partial(template, locals = {})
+    haml(template, :layout => false, :locals => locals)
+  end
 end
 
 
@@ -178,18 +176,18 @@ post "/file/pitch/:file_id" do |file_id|
     db_user = User.create(user_id: user_id, folder_id: folder_id)
   end
 
-    folder_id = db_user.folder_id
-    folder = account.folder(folder_id)
-    file = account.file(file_id) # get the file by id
-    file_copy = file.copy(folder)   #Copy the file to the Pitch folder
-    pitchfile = file_copy.name #Stores the copied file name
-    username = user["login"] #Gets the user login. 
+  folder_id = db_user.folder_id
+  folder = account.folder(folder_id)
+  file = account.file(file_id) # get the file by id
+  file_copy = file.copy(folder)   #Copy the file to the Pitch folder
+  pitchfile = file_copy.name #Stores the copied file name
+  username = user["login"] #Gets the user login. 
 
 
-    #Function to send pitch mail after the file is copied.
-    send_pitch_email(pitchfile: pitchfile, username: username)
+  #Function to send pitch mail after the file is copied.
+  send_pitch_email(pitchfile: pitchfile, username: username)
 
-   partial :item, :item => folder # render the information about this folder
+  partial :item, :item => folder # render the information about this folder
 
 end
 
@@ -198,6 +196,7 @@ get "/file/:file_id" do |file_id|
   account = require_login  # make sure the user is authorized
   file = account.file(file_id) # get the file by id
   user = account.info
+  #FIXME: puts to logger
   puts ("FIle_id" + file.id)
   puts ("Account "+user["user_id"])
 
