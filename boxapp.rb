@@ -9,8 +9,9 @@ require 'haml'
 require 'pony'
 require 'mongoid'
 require 'json'
-require "./models/user"
+require './models/user'
 
+require 'logger'
 # Sessions are used to keep track of user logins.
 enable :sessions
 
@@ -18,13 +19,16 @@ enable :sessions
 # This is where we set the API key given by Box.
 # Get a key here: https://www.box.net/developers/services
 set :box_api_key, ENV['BOX_API_KEY']
+set :environment, 'development'
 Box_API = "21yf6qw0oasxfbmsaanlqlastppwye72" #Temporary. Will be changed later
 
 configure do
 
 
   Mongoid.load!("config/mongoid.yml")
-
+  log = Logger.new("logs/#{ENV['RACK_ENV']}.txt")
+  #FIXME: Change later when the app is more stable
+  log.level = Logger::DEBUG
 
 end
 
@@ -197,8 +201,9 @@ get "/file/:file_id" do |file_id|
   file = account.file(file_id) # get the file by id
   user = account.info
   #FIXME: puts to logger
-  puts ("FIle_id" + file.id)
-  puts ("Account "+user["user_id"])
+
+  logger.debug "FIle_id" + file.id
+  logger.debug "Account "+user["user_id"]
 
   # Note: Getting a file by ID is fastest, but it won't know about its parents.
   # If you need this information, use 'account.root.find(:id => file_id)' instead.
