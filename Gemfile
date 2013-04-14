@@ -34,7 +34,8 @@ gem "box-api", "~> 0.2.2"
 gem 'rack-flash3'
 
 group :development, :test do
-
+  gem "pry"
+  gem "debugger-pry"
   gem "forward"
   gem "debugger"
 end
