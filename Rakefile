@@ -1,6 +1,10 @@
 require "./boxapp"
 include Rake::DSL
 
+task :console do
+  binding.pry
+end
+
 namespace :crushpath do
 
   desc "Send pitch stats"
